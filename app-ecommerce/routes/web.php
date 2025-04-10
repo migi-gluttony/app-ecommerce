@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CartController;
-use App\Http\Controllers\ProductController;
+// use App\Http\Controllers\ProductController;
 
 // Route principale qui affiche tous les produits
 Route::get('/', [CartController::class, 'index']);
@@ -14,4 +14,4 @@ Route::delete('/remove-from-cart', [CartController::class, 'removeFromCart']);
 Route::get('/clear-cart', [CartController::class, 'clearCart']);
 
 // Routes pour la gestion des produits (si nécessaire)
-Route::resource('products', ProductController::class);
+// Route::resource('products', ProductController::class);

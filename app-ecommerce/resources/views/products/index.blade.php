@@ -1,86 +1,78 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Laravel</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet">
-    <style>
-        body {
-            align-items: center;
-            height: 80vh;
-        }
-        .export-btn {
-            padding: 15px 30px;
-            font-size: 18px;
-            background: #0099FF;
-            margin-top: 20px;
-        }
-        .products {
-            margin-top: 20px;
-        }
-        .caption {
-            text-align: center;
-        }
-        .img-size {
-            width: 225px !important;
-            height: 153px;
-            margin-left: 20px;
-            margin-top: 10px;
-        }
-        .adding-cart, #adding-cart {
-            display: none;
-        }
-    </style>
-</head>
-<body>
-    @extends('layout2')
-    @section('title', 'Products')
-    @section('content')
-    <div class="container mt-5">
-        <h2>Liste de produits</h2>
+@extends('products.layout')
+@section('content')
+<div class="row" style="margin-top: 20px;">
+    <div class="col-lg-12 margin-tb">
+        <div style="text-align: center;">
+            <h4>Gestion de produits</h4>
+        </div>
+        <div class="pull-right">
+            <a class="btn btn-success" href="{{ route('products.create') }}">
+                Ajouter nouveau produit
+            </a>
+        </div>
     </div>
-    <div class="container products">
-        <div class="row">
-            @foreach($products as $product)
-            <div class="col-xs-12 col-sm-6 col-md-4">
-                <div class="card mb-4">
-                    <img src="/images/{{ $product->image }}" class="card-img-top img-size" alt="{{ $product->name }}">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ $product->name }}</h5>
-                        <p class="card-text">{{ \Illuminate\Support\Str::limit(strtolower($product->detail), 50) }}</p>
-                        <p class="card-text"><strong>Prix: </strong> {{ $product->price }} dh</p>
-                        <a href="javascript:void(0);" data-product-id="{{ $product->id }}" id="add-cart-btn-{{ $product->id }}" class="btn btn-warning btn-block text-center add-cart-btn add-to-cart-button">Ajouter au panier</a>
-                        <span id="adding-cart-{{ $product->id }}" class="btn btn-warning btn-block text-center added-msg" style="display:none;">Ajouté.</span>
-                    </div>
-                </div>
-            </div>
-            @endforeach
-        </div><!-- End row -->
-    </div>
-    @endsection
-    @section('scripts')
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <script type="text/javascript">
-        $(document).ready(function() {
-            $('.add-to-cart-button').on('click', function() {
-                var productId = $(this).data('product-id');
-                $.ajax({
-                    type: 'GET',
-                    url: '/add-to-cart/' + productId,
-                    success: function(data) {
-                        $("#adding-cart-" + productId).show();
-                        $("#add-cart-btn-" + productId).hide();
-                    },
-                    error: function(error) {
-                        console.error('Error adding to cart:', error);
-                    }
-                });
-            });
-        });
-    </script>
-    @endsection
-</body>
-</html>
+</div>
+<br>
+@if ($message = Session::get('success'))
+<div class="alert alert-success">
+    <p>{{ $message }}</p>
+</div>
+@endif
+<table class="table table-bordered" style="margin-top: 20px;">
+    <tr>
+        <th>Numéro</th>
+        <th>Image</th>
+        <th>Nom produit</th>
+        <th>Details</th>
+        <th>prix</th>
+        <th>stock</th>
+        <th>id d'entreprise</th>
+        <th width="280px">Action</th>
+    </tr>
+    @foreach ($products as $product)
+    <tr>
+        <td>{{ $product->id }}</td>
+        <td><img src="/images/{{ $product->image }}" width="100px"></td>
+        <td>{{ $product->name }}</td>
+        <td>{{ $product->detail }}</td>
+        <td>{{ $product->price }} dh</td>
+        <td>{{ $product->stock }}</td>
+        <td>{{ $product->companyid }}</td>
+        <td style="width: 300px;">
+            <form action="{{ route('products.destroy', $product->id) }}" method="POST">
+                <a class="btn btn-info" href="{{ route('products.show', $product->id) }}">Afficher</a>
+                <a class="btn btn-primary" href="{{ route('products.edit', $product->id) }}">Modifier</a>
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-danger">Supprimer</button>
+            </form>
+        </td>
+    </tr>
+    @endforeach
+</table>
+{!! $products->links() !!}
+<div class="search mt-5">
+    <h3>Filtrage de produits</h3>
+    <form action="{{ route('products.index') }}" method="GET" class="row g-3">
+        <div class="col-sm-12 col-md-3">
+            <input type="text" name="search" class="form-control" placeholder="chercher par mot clé" value="{{ request('search') }}">
+        </div>
+        <div class="col-sm-12 col-md-2">
+            <input type="number" name="min_price" class="form-control" placeholder="prix min" value="{{ request('min_price') }}">
+        </div>
+        <div class="col-sm-12 col-md-2">
+            <input type="number" name="max_price" class="form-control" placeholder="prix max" value="{{ request('max_price') }}">
+        </div>
+        <div class="col-sm-12 col-md-2">
+            <input type="number" name="min_stock" class="form-control" placeholder="stock min" value="{{ request('min_stock') }}">
+        </div>
+        <div class="col-sm-12 col-md-2">
+            <input type="number" name="max_stock" class="form-control" placeholder="stock max" value="{{ request('max_stock') }}">
+        </div>
+        <div class="col-sm-12 col-md-1">
+            <button class="btn btn-warning" type="submit">Search</button>
+        </div>
+    </form>
+</div>
+<a href="{{ route('products.index') }}" class="btn btn-success mt-3">Retour à la liste de products</a>
+@endsection
